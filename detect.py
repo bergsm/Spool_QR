@@ -24,32 +24,15 @@ class Filament:
 
 while True:
     #Get snapshot
-    #urllib.request.urlretrieve('http://192.168.1.118/webcam/?action=snapshot', 'snapshot.jpeg')
     urllib.request.urlretrieve(octo_url + '/webcam/?action=snapshot', 'snapshot.jpeg')
     time.sleep(0.3)
+    #Can use live feed if wanted
     #cam = cv2.VideoCapture('http://192.168.1.118/webcam/?action=stream')
     #_, img = cam.read()
 
     img = cv2.imread('snapshot.jpeg')
     #detect QR codes
     data, bbox, _ = detector.detectAndDecode(img)
-    #spool_id = 2
-    #response = requests.patch(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, json={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
-    #test_filament = Filament()
-    #test_filament.color = 'Rainbow'
-    #test_filament.capacity = 1000
-    #test_filament.material = 'PLA'
-    #test_filament.vendor = 'Amazon'
-    #response = requests.post(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers, data=json.dumps({'spool': { 'id': None, 'name': test_filament.color, 'material': test_filament.material, 'vendor': test_filament.vendor, 'cost': 20, 'weight': test_filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
-    #print(response)
-    #print(response.text)
-
-
-    #response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
-    #time.sleep(0.05)
-    #response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
-    #response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P3000'}))
-    #time.sleep(5)
 
 
     #if QR code:
@@ -81,7 +64,6 @@ while True:
                 print('match')
                 spool_id = spool['id']
 
-                #response = requests.post(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, data=json.dumps({'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True }))
                 response = requests.patch(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, json={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
                 print(response)
                 print(response.text)
@@ -112,6 +94,6 @@ while True:
 #cam.release()
 cv2.destroyAllWindows()
 
-    #If error
+    #TODO try catch If error
         #Error beep
 
