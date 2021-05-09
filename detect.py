@@ -15,6 +15,12 @@ octo_headers = {
 
 detector = cv2.QRCodeDetector()
 
+class Filament:
+    color = 'White'
+    capacity = 1000
+    material = 'PLA'
+    vendor = 'Amazon'
+
 
 while True:
     #Get snapshot
@@ -28,28 +34,55 @@ while True:
     #detect QR codes
     data, bbox, _ = detector.detectAndDecode(img)
 
-    #response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P500'}))
-    #print(response)
-    #print(response.text)
-
-
 
     #if QR code:
     if data:
-        #Change filament to QR code if exists
+        #fetch current spools
+        response = requests.get(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers)
+        print(response)
+        print(response.text)
+        spools = response.json()
+
         print("QR Code detected-->", data)
-        response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P500'}))
+        filament = Filament()
+        data = data.split('|')
+        filament.color = data[0]
+        filament.capacity = data[1]
+        filament.material = data[2]
+        filament.vendor = data[3]
 
-        time.sleep(10)
+        #Change filament to QR code if exists
+        for spool in spools['spools']:
+            if filament.color == spool['name']:
+                match = True
+                print('match')
+                spool_id = spool['id']
 
-        #Confirmation beep
+                response = requests.post(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, payload={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
+                #Confirmation beep
+                if (response.status_code == 200):
+                    response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
+                    response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
+                else:
+                    # TODO use bad beep?
+                    response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P2000'}))
 
         #Else create new filament
-        #Confirmation beep
+        if match == False:
+            print("New filament")
+            response = requests.post(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, payload={'spool': { 'id': None, 'name': filament.color, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True })
 
-    #cv2.imshow("img", img)
-    #if cv2.waitKey(1) == ord("Q"):
-    #    break
+            if (response.status_code == 200):
+                #Confirmation beep
+                response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
+                response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P50'}))
+            else:
+                # TODO use bad beep?
+                response = requests.post(octo_url+'/api/printer/command', headers=octo_headers, data=json.dumps({'command': 'M300 P2000'}))
+
+
+
+        time.sleep(10)
 
     time.sleep(0.5)
 
