@@ -4,7 +4,7 @@ import urllib.request
 import time
 import requests
 
-octo_url = 'http://192.168.1.118'
+octo_url = 'YOUR.IP.ADDRESS'
 octo_api_token = '<YOUR_TOKEN_HERE>'
 
 octo_headers = {
