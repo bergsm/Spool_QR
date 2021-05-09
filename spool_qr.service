@@ -1,0 +1,15 @@
+[Unit]
+Description=Octoprint Spool QR Code
+After=octoprint.service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python3 /home/pi/Spool_QR/detect.py
+
+[Install]
+WantedBy=multi-user.target
