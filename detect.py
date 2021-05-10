@@ -30,6 +30,7 @@ while True:
     #cam = cv2.VideoCapture('http://192.168.1.118/webcam/?action=stream')
     #_, img = cam.read()
 
+    #TODO read into memory rather than to disk
     img = cv2.imread('snapshot.jpeg')
     #detect QR codes
     data, bbox, _ = detector.detectAndDecode(img)
