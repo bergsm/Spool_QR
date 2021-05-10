@@ -22,6 +22,7 @@ class Filament:
     vendor = 'Amazon'
 
 
+#TODO only look for QR codes while printer is not printing
 while True:
     #Get snapshot
     urllib.request.urlretrieve(octo_url + '/webcam/?action=snapshot', 'snapshot.jpeg')
