@@ -22,7 +22,6 @@ class Filament:
     material = 'PLA'
     vendor = 'Amazon'
 
-
 while True:
     response = requests.get(octo_url+'/api/printer', headers=octo_headers)
     state = response.json()['state']['text']
@@ -78,8 +77,12 @@ while True:
             if match == False:
                 print("New filament")
                 response = requests.post(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers, data=json.dumps({'spool': { 'id': None, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
-                print(response)
-                print(response.text)
+
+                #if spool created successfully
+                if (response.status_code == 200):
+                    #New filament created so change to it
+                    spool_id = response.json()['spool']['id']
+                    response = requests.patch(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, json={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
 
             if (response.status_code == 200):
                 print('Filament changed!')
@@ -99,7 +102,3 @@ while True:
 
 #cam.release()
 cv2.destroyAllWindows()
-
-    #If error
-        #Error beep
-
