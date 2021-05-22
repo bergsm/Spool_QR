@@ -24,6 +24,9 @@ class Filament:
 
 while True:
     response = requests.get(octo_url+'/api/printer', headers=octo_headers)
+    if (response.status_code != 200):
+        continue
+
     state = response.json()['state']['text']
     print(state)
 
@@ -42,6 +45,8 @@ while True:
 
         #if QR code:
         if data:
+            #TODO if current selected spool and qr code are identical, reset spool to full?
+            #TODO need a way to reset spool manager spools for new spools
             #fetch current spools
             match = False
             response = requests.get(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers)
