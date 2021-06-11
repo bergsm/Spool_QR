@@ -7,6 +7,7 @@ import requests
 octo_url = 'YOUR.IP.ADDRESS'
 octo_api_token = '<YOUR_TOKEN_HERE>'
 
+
 octo_headers = {
         'Content-Type': 'application/json',
         'X-Api-Key': octo_api_token
@@ -20,22 +21,6 @@ class Filament:
     capacity = 750
     material = 'PLA'
     vendor = 'Amazon'
-
-
-#response = requests.get(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers)
-#print(response)
-#print(response.text)
-#spools = response.json()
-
-#exit(0)
-
-#TODO compare QR code with current filament. If same, current filament ID with refilled stats
-filament = Filament()
-response = requests.get(octo_url+'/plugin/filamentmanager/selections', headers=octo_headers)
-print(response.json()['selections'][0]['spool']['name'])
-response = requests.patch(octo_url+'/plugin/filamentmanager/spools/8', headers=octo_headers, data=json.dumps({'spool': { 'id': 8, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
-print(response.text)
-exit(0)
 
 
 while True:
@@ -78,21 +63,30 @@ while True:
             filament.vendor = data[3]
             print(data[3])
 
-            #Change filament to QR code if exists
-            for spool in spools['spools']:
-                if filament.color == spool['name']:
-                    match = True
-                    print('match')
-                    spool_id = spool['id']
+            #get current filament
+            response = requests.get(octo_url+'/plugin/filamentmanager/selections', headers=octo_headers)
+            print(response.json()['selections'][0]['spool']['name'])
+            #if new QR code matches current filament
+            if filament.color == response.json()['selections'][0]['spool']['name']:
+                spool_id = response.json()['selections'][0]['spool']['id']
+                #"Refill" current filament
+                response = requests.patch(octo_url+'/plugin/filamentmanager/spools/'+spool_id, headers=octo_headers, data=json.dumps({'spool': { 'id': 8, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
+            else:
+                #Change filament to QR code if exists
+                for spool in spools['spools']:
+                    if filament.color == spool['name']:
+                        match = True
+                        print('match')
+                        spool_id = spool['id']
 
-                    response = requests.patch(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, json={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
-                    print(response)
-                    print(response.text)
+                        response = requests.patch(octo_url+'/plugin/filamentmanager/selections/0', headers=octo_headers, json={'selection': { 'tool': 0, 'spool': { 'id': spool_id } }, 'updateui': True })
+                        print(response)
+                        print(response.text)
 
-            #Else create new filament
-            if match == False:
-                print("New filament")
-                response = requests.post(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers, data=json.dumps({'spool': { 'id': None, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
+                #Else create new filament
+                if match == False:
+                    print("New filament")
+                    response = requests.post(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers, data=json.dumps({'spool': { 'id': None, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
 
                 #if spool created successfully
                 if (response.status_code == 200):
