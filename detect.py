@@ -65,12 +65,12 @@ while True:
 
             #get current filament
             response = requests.get(octo_url+'/plugin/filamentmanager/selections', headers=octo_headers)
-            print(response.json()['selections'][0]['spool']['name'])
+            print("Current filament: " + response.json()['selections'][0]['spool']['name'])
             #if new QR code matches current filament
             if filament.color == response.json()['selections'][0]['spool']['name']:
                 spool_id = response.json()['selections'][0]['spool']['id']
                 #"Refill" current filament
-                response = requests.patch(octo_url+'/plugin/filamentmanager/spools/'+spool_id, headers=octo_headers, data=json.dumps({'spool': { 'id': 8, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
+                response = requests.patch(octo_url+'/plugin/filamentmanager/spools/'+str(spool_id), headers=octo_headers, data=json.dumps({'spool': { 'id': None, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
             else:
                 #Change filament to QR code if exists
                 for spool in spools['spools']:
