@@ -7,7 +7,6 @@ import requests
 octo_url = 'YOUR.IP.ADDRESS'
 octo_api_token = '<YOUR_TOKEN_HERE>'
 
-
 octo_headers = {
         'Content-Type': 'application/json',
         'X-Api-Key': octo_api_token
@@ -17,16 +16,30 @@ octo_headers = {
 detector = cv2.QRCodeDetector()
 
 class Filament:
-    color = 'White'
-    capacity = 1000
+    color = 'Silver'
+    capacity = 750
     material = 'PLA'
     vendor = 'Amazon'
 
+
+#response = requests.get(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers)
+#print(response)
+#print(response.text)
+#spools = response.json()
+
+#exit(0)
+
+#TODO compare QR code with current filament. If same, current filament ID with refilled stats
+filament = Filament()
+response = requests.get(octo_url+'/plugin/filamentmanager/selections', headers=octo_headers)
+print(response.json()['selections'][0]['spool']['name'])
+response = requests.patch(octo_url+'/plugin/filamentmanager/spools/8', headers=octo_headers, data=json.dumps({'spool': { 'id': 8, 'name': filament.color, 'material': filament.material, 'vendor': filament.vendor, 'cost': 20, 'weight': filament.capacity, 'used': 0, 'temp_offset': 0, 'temp_offset': 0, 'profile': { 'id': 1 } }, 'updateui': True }))
+print(response.text)
+exit(0)
+
+
 while True:
     response = requests.get(octo_url+'/api/printer', headers=octo_headers)
-    if (response.status_code != 200):
-        continue
-
     state = response.json()['state']['text']
     print(state)
 
@@ -45,8 +58,6 @@ while True:
 
         #if QR code:
         if data:
-            #TODO if current selected spool and qr code are identical, reset spool to full?
-            #TODO need a way to reset spool manager spools for new spools
             #fetch current spools
             match = False
             response = requests.get(octo_url+'/plugin/filamentmanager/spools', headers=octo_headers)
